@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Ticket Saver · Online Booking</title>
+    <!-- Font Awesome for icons (optional but adds visual clarity) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f0f4fa 0%, #d9e2ef 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+        .system-container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 50px -8px rgba(0, 20, 40, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.7);
+            padding: 2rem 2rem 2rem 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 2rem;
+            color: #1e2b3c;
+            letter-spacing: -0.02em;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(30, 43, 60, 0.1);
+        }
+        h1 i {
+            color: #2a6f97;
+            font-size: 2rem;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1.2fr 0.9fr 0.9fr;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        @media (max-width: 1000px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        .card {
+            background: #ffffffd9;
+            backdrop-filter: blur(8px);
+            border-radius: 1.75rem;
+            padding: 1.5rem 1.3rem;
+            box-shadow: 0 8px 18px rgba(0, 20, 40, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            transition: transform 0.15s ease;
+        }
+        .card:hover {
+            box-shadow: 0 14px 24px rgba(0, 30, 60, 0.12);
+        }
+        .card h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e3c5a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+            letter-spacing: -0.01em;
+            border-left: 5px solid #2a6f97;
+            padding-left: 0.8rem;
+        }
+        .bus-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            max-height: 450px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+        .bus-item {
+            background: #f9fcff;
+            border-radius: 1.2rem;
+            padding: 1rem 1.2rem;
+            border: 1px solid #cbdbe9;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .bus-item:hover {
+            background: #e3f0fd;
+            border-color: #2a6f97;
+            transform: scale(1.01);
+        }
+        .bus-item.selected {
+            background: #d3e6fb;
+            border: 2px solid #2a6f97;
+            box-shadow: 0 6px 12px rgba(42, 111, 151, 0.15);
+        }
+        .bus-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .bus-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #12344d;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .bus-name i {
+            color: #2a6f97;
+            font-size: 1rem;
+        }
+        .bus-time {
+            font-size: 0.8rem;
+            color: #4e6478;
+            display: flex;
+            gap: 12px;
+        }
+        .bus-time i {
+            margin-right: 4px;
+            color: #3e7a9e;
+        }
+        .seats-badge {
+            background: #1e3c5a;
+            color: white;
+            font-weight: 600;
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        .seats-badge i {
+            margin-right: 4px;
+        }
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.2rem;
+        }
+        .seat {
+            aspect-ratio: 1 / 1;
+            background: #eef3f9;
+            border-radius: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a405b;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.12s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            user-select: none;
+        }
+        .seat.available:hover {
+            background: #c7def5;
+            transform: scale(1.02);
+        }
+        .seat.selected {
+            background: #2a6f97;
+            color: white;
+            border-color: #124263;
+            box-shadow: 0 6px 12px rgba(42, 111, 151, 0.3);
+        }
+        .seat.booked {
+            background: #bfcbd8;
+            color: #6f7e8c;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            border-color: #a0b3c4;
+            opacity: 0.7;
+        }
+        .seat.available {
+            background: #e5f0fa;
+        }
+        .payment-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .selected-seats {
+            background: #eaf1fa;
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px dashed #2a6f97;
+        }
+        .selected-seats span {
+            font-weight: 700;
+            color: #1e3c5a;
+        }
+        .btn {
+            background: #1e3c5a;
+            color: white;
+            border: none;
+            border-radius: 3rem;
+            padding: 0.9rem 1.2rem;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            box-shadow: 0 8px 16px rgba(0, 30, 60, 0.15);
+            width: 100%;
+        }
+        .btn i {
+            font-size: 1.1rem;
+        }
+        .btn:hover:not(:disabled) {
+            background: #2a6f97;
+            transform: scale(1.01);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .btn-pay {
+            background: #0f4b6e;
+        }
+        .btn-pay:hover:not(:disabled) {
+            background: #1c6b97;
+        }
+        .receipt-area {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.2rem;
+            border: 1px solid #bdd3e8;
+            font-size: 0.9rem;
+            color: #17344b;
+            margin-top: 0.5rem;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.02);
+        }
+        .receipt-area .receipt-header {
+            font-weight: 700;
+            border-bottom: 1px solid #bdd3e8;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .receipt-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.35rem;
+        }
+        .sms-note {
+            background: #d9eefa;
+            padding: 0.6rem 0.9rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            color: #0e3e5b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 0.8rem;
+        }
+        .sms-note i {
+            color: #1f6b9b;
+        }
+        .attendant-stats {
+            margin-top: 1.2rem;
+            background: #e9f0f7;
+            border-radius: 1.2rem;
+            padding: 1rem 1rem;
+            font-size: 0.9rem;
+            border-left: 4px solid #2a6f97;
+        }
+        .attendant-stats p {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+        .badge {
+            background: #1e3c5a;
+            color: white;
+            border-radius: 1rem;
+            padding: 0.15rem 0.7rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .footer-note {
+            margin-top: 1.8rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #4d6275;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            border-top: 1px solid #c7d9e9;
+            padding-top: 1rem;
+        }
+        .footer-note i {
+            margin-right: 5px;
+        }
+        .empty-message {
+            color: #7b8c9c;
+            font-style: italic;
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="system-container">
+    <h1><i class="fas fa-bus"></i> Bus Ticket Saver</h1>
+    <div class="dashboard">
+        <!-- LEFT: BUS LIST + SEAT SELECTION -->
+        <div class="card" style="grid-column: span 1;">
+            <h2><i class="fas fa-road"></i> Available Buses</h2>
+            <div class="bus-list" id="busListContainer">
+                <!-- Dynamically rendered bus items -->
+            </div>
+            <div style="margin-top: 1.8rem;">
+                <h2><i class="fas fa-chair"></i> Select Seats</h2>
+                <div id="seatGridContainer" class="seat-grid">
+                    <!-- Dynamically rendered seats -->
+                </div>
+                <div class="selected-seats">
+                    <span>Selected: <span id="selectedSeatNumbers">—</span></span>
+                    <span id="selectedSeatCount">0 seat(s)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIDDLE: PAYMENT & RECEIPT -->
+        <div class="card">
+            <h2><i class="fas fa-credit-card"></i> Payment & Ticket</h2>
+            <div class="payment-panel">
+                <div class="selected-seats" style="background: #e3f0fd;">
+                    <span><i class="fas fa-bus"></i> <span id="paymentBusName">Select a bus</span></span>
+                    <span id="paymentBusTime">—</span>
+                </div>
+                <button class="btn btn-pay" id="payButton" disabled>
+                    <i class="fas fa-wallet"></i> Pay & Confirm
+                </button>
+                <div class="receipt-area" id="receiptArea">
+                    <div class="receipt-header">
+                        <span><i class="fas fa-receipt"></i> Receipt</span>
+                        <span id="receiptStatus">—</span>
+                    </div>
+                    <div id="receiptContent" class="empty-message">
+                        <i class="fas fa-ticket-alt"></i> No payment yet
+                    </div>
+                </div>
+                <div class="sms-note">
+                    <i class="fas fa-sms"></i> If you use a keypad phone, an SMS confirmation will be sent to your line after payment.
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: ATTENDANT / BUS STATUS -->
+        <div class="card">
+            <h2><i class="fas fa-user-tie"></i> Attendant Dashboard</h2>
+            <div id="attendantPanel">
+                <p style="font-weight:600; color:#1e3c5a; margin-bottom:0.8rem;"><i class="fas fa-info-circle"></i> Bus status</p>
+                <div id="attendantBusStatus">
+                    <!-- filled dynamically -->
+                </div>
+            </div>
+            <div class="attendant-stats" id="attendantStats">
+                <!-- extra stats -->
+            </div>
+        </div>
+    </div>
+    <div class="footer-note">
+        <span><i class="fas fa-clock"></i> Live departure & arrival times</span>
+        <span><i class="fas fa-chair"></i> Real‑time seat availability</span>
+        <span><i class="fas fa-check-circle"></i> Instant confirmation</span>
+    </div>
+</div>
+<script>
+    (function() {
+        // ---------- SIMULATED DATA ----------
+        const buses = [
+            { id: 1, name: 'Express 101', from: 'Lusaka', to: 'Ndola', departure: '08:30', arrival: '12:45', totalSeats: 32 },
+            { id: 2, name: 'Copper Line', from: 'Kitwe', to: 'Lusaka', departure: '09:15', arrival: '14:10', totalSeats: 32 },
+            { id: 3, name: 'City Hopper', from: 'Lusaka', to: 'Livingstone', departure: '10:00', arrival: '16:30', totalSeats: 32 },
+            { id: 4, name: 'Night Rider', from: 'Ndola', to: 'Lusaka', departure: '21:20', arrival: '02:15', totalSeats: 32 },
+            { id: 5, name: 'Greenline', from: 'Kabwe', to: 'Lusaka', departure: '07:00', arrival: '09:45', totalSeats: 32 }
+        ];
+
+        // Seat book state: each bus id maps to an array of booleans (true = booked)
+        // We'll initialize with some random bookings to simulate real life
+        const seatBookings = {};
+        buses.forEach(bus => {
+            const seats = new Array(bus.totalSeats).fill(false);
+            // random pre-booked seats (approx 20-40% occupied)
+            const preBookedCount = Math.floor(Math.random() * (bus.totalSeats * 0.4)) + 3;
+            for (let i = 0; i < preBookedCount; i++) {
+                const randomIndex = Math.floor(Math.random() * bus.totalSeats);
+                seats[randomIndex] = true;
+            }
+            seatBookings[bus.id] = seats;
+        });
+
+        // Current selected bus id and selected seats (indexes)
+        let selectedBusId = buses[0].id;
+        let selectedSeats = []; // array of seat indexes (0-based)
+
+        // last payment receipt data
+        let lastReceipt = null;
+
+        // DOM elements
+        const busListContainer = document.getElementById('busListContainer');
+        const seatGridContainer = document.getElementById('seatGridContainer');
+        const selectedSeatNumbersSpan = document.getElementById('selectedSeatNumbers');
+        const selectedSeatCountSpan = document.getElementById('selectedSeatCount');
+        const paymentBusName = document.getElementById('paymentBusName');
+        const paymentBusTime = document.getElementById('paymentBusTime');
+        const payButton = document.getElementById('payButton');
+        const receiptArea = document.getElementById('receiptArea');
+        const receiptContent = document.getElementById('receiptContent');
+        const receiptStatus = document.getElementById('receiptStatus');
+        const attendantBusStatus = document.getElementById('attendantBusStatus');
+        const attendantStats = document.getElementById('attendantStats');
+
+        // ---------- RENDER BUS LIST ----------
+        function renderBusList() {
+            busListContainer.innerHTML = '';
+            buses.forEach(bus => {
+                const bookedSeats = seatBookings[bus.id].filter(v => v === true).length;
+                const availableSeats = bus.totalSeats - bookedSeats;
+                const busDiv = document.createElement('div');
+                busDiv.className = `bus-item ${selectedBusId === bus.id ? 'selected' : ''}`;
+                busDiv.dataset.busId = bus.id;
+                busDiv.innerHTML = `
+                    <div class="bus-info">
+                        <div class="bus-name"><i class="fas fa-bus-alt"></i> ${bus.name}</div>
+                        <div class="bus-time">
+                            <span><i class="fas fa-arrow-up"></i> ${bus.departure} · ${bus.from}</span>
+                            <span><i class="fas fa-arrow-down"></i> ${bus.arrival} · ${bus.to}</span>
+                        </div>
+                    </div>
+                    <div class="seats-badge"><i class="fas fa-chair"></i> ${availableSeats}/${bus.totalSeats}</div>
+                `;
+                busDiv.addEventListener('click', () => {
+                    if (selectedBusId !== bus.id) {
+                        selectedBusId = bus.id;
+                        selectedSeats = []; // reset selected seats when changing bus
+                        renderBusList();
+                        renderSeats();
+                        updatePaymentPanel();
+                        renderAttendantPanel();
+                    }
+                });
+                busListContainer.appendChild(busDiv);
+            });
+        }
+
+        // ---------- RENDER SEATS FOR SELECTED BUS ----------
+        function renderSeats() {
+            seatGridContainer.innerHTML = '';
+            const bus = buses.find(b => b.id === selectedBusId);
+            if (!bus) return;
+
+            const bookedArray = seatBookings[bus.id];
+            // create 4x8 grid (32 seats) — we use indices 0..totalSeats-1
+            for (let i = 0; i < bus.totalSeats; i++) {
+                const seatNumber = i + 1;
+                const isBooked = bookedArray[i];
+                const isSelected = selectedSeats.includes(i);
+                const seatDiv = document.createElement('div');
+                seatDiv.className = `seat ${isBooked ? 'booked' : 'available'} ${isSelected ? 'selected' : ''}`;
+                seatDiv.textContent = seatNumber;
+                if (!isBooked) {
+                    seatDiv.addEventListener('click', () => {
+                        toggleSeatSelection(i);
+                    });
+                }
+                seatGridContainer.appendChild(seatDiv);
+            }
+            updateSelectedSeatsDisplay();
+        }
+
+        // toggle seat selection
+        function toggleSeatSelection(seatIndex) {
+            const bus = buses.find(b => b.id === selectedBusId);
+            if (seatBookings[bus.id][seatIndex] === true) return; // booked, ignore
+
+            if (selectedSeats.includes(seatIndex)) {
+                selectedSeats = selectedSeats.filter(idx => idx !== seatIndex);
+            } else {
+                selectedSeats.push(seatIndex);
+            }
+            // sort for better display
+            selectedSeats.sort((a, b) => a - b);
+            renderSeats(); // re-render seat grid to show selected styles
+            updateSelectedSeatsDisplay();
+            updatePaymentPanel();
+            renderAttendantPanel(); // update attendant dashboard with current status
+        }
+
+        // update the small summary of selected seats
+        function updateSelectedSeatsDisplay() {
+            if (selectedSeats.length === 0) {
+                selectedSeatNumbersSpan.textContent = '—';
+                selectedSeatCountSpan.textContent = '0 seat(s)';
+                payButton.disabled = true;
+                return;
+            }
+            const seatNumbers = selectedSeats.map(idx => idx + 1).join(', ');
+            selectedSeatNumbersSpan.textContent = seatNumbers;
+            selectedSeatCountSpan.textContent = `${selectedSeats.length} seat(s)`;
+            payButton.disabled = false;
+        }
+
+        // update payment panel info (bus name, time, button state)
+        function updatePaymentPanel() {
+            const bus = buses.find(b => b.id === selectedBusId);
+            if (bus) {
+                paymentBusName.textContent = bus.name;
+                paymentBusTime.textContent = `${bus.departure} → ${bus.arrival}`;
+            }
+            // enable pay if seats selected and payment not already processed for these seats (we just keep it enabled)
+            payButton.disabled = selectedSeats.length === 0;
+            // if receipt exists but seats are deselected? we keep old receipt but that's fine
+        }
+
+        // ---------- PAYMENT PROCESSING ----------
+        function handlePayment() {
+            if (selectedSeats.length === 0) return;
+            const bus = buses.find(b => b.id === selectedBusId);
+            if (!bus) return;
+
+            // check if any selected seat is already booked (should not happen)
+            const bookedArray = seatBookings[bus.id];
+            const anyBooked = selectedSeats.some(idx => bookedArray[idx] === true);
+            if (anyBooked) {
+                alert('Sorry, one or more selected seats are already booked. Please refresh.');
+                selectedSeats = [];
+                renderSeats();
+                updatePaymentPanel();
+                return;
+            }
+
+            // Mark seats as booked
+            selectedSeats.forEach(idx => {
+                bookedArray[idx] = true;
+            });
+
+            // Create receipt object
+            const seatNumbers = selectedSeats.map(idx => idx + 1).sort((a,b) => a-b);
+            const amount = seatNumbers.length * 150; // e.g., 150 per seat
+            lastReceipt = {
+                busName: bus.name,
+                from: bus.from,
+                to: bus.to,
+                departure: bus.departure,
+                arrival: bus.arrival,
+                seats: seatNumbers,
+                total: amount,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                date: new Date().toLocaleDateString()
+            };
+
+            // Clear selected seats after successful payment
+            const paidSeatCount = selectedSeats.length;
+            selectedSeats = [];
+
+            // Re-render everything
+            renderBusList();        // updates available seats count
+            renderSeats();          // now shows booked seats, selected cleared
+            updatePaymentPanel();
+            updateSelectedSeatsDisplay();
+            renderAttendantPanel();
+            renderReceipt();
+
+            // Simulate SMS for keypad phones (show note)
+            showSmsNotification(seatNumbers, bus.name, amount);
+
+            // Show alert (optional)
+            alert(`✅ Payment successful! ${paidSeatCount} seat(s) confirmed. Receipt generated.`);
+        }
+
+        // Show an SMS-like notification inside the receipt area (or as an extra element)
+        function showSmsNotification(seatNumbers, busName, amount) {
+            // We'll append a small sms note inside receipt area (or as a floating toast)
+            // For simplicity, we add a small message below the receipt content.
+            const smsDiv = document.createElement('div');
+            smsDiv.className = 'sms-note';
+            smsDiv.style.marginTop = '12px';
+            smsDiv.style.background = '#c7e3f5';
+            smsDiv.innerHTML = `<i class="fas fa-check-circle"></i> <strong>SMS sent:</strong> You paid K${amount} for ${seatNumbers.length} seat(s) on ${busName}. Seats: ${seatNumbers.join(', ')}. Thank you!`;
+            // remove any previous sms note
+            const oldSms = receiptArea.querySelector('.sms-note.dynamic-sms');
+            if (oldSms) oldSms.remove();
+            smsDiv.classList.add('dynamic-sms');
+            receiptArea.appendChild(smsDiv);
+        }
+
+        // ---------- RENDER RECEIPT ----------
+        function renderReceipt() {
+            if (!lastReceipt) {
+                receiptContent.innerHTML = '<i class="fas fa-ticket-alt"></i> No payment yet';
+                receiptStatus.textContent = '—';
+                return;
+            }
+            const r = lastReceipt;
+            receiptStatus.textContent = 'PAID';
+            receiptContent.innerHTML = `
+                <div class="receipt-line"><span><i class="fas fa-bus"></i> ${r.busName}</span><span>${r.from} → ${r.to}</span></div>
+                <div class="receipt-line"><span><i class="fas fa-clock"></i> Departure</span><span>${r.departure} · Arrival ${r.arrival}</span></div>
+                <div class="receipt-line"><span><i class="fas fa-chair"></i> Seats</span><span>${r.seats.join(', ')}</span></div>
+                <div class="receipt-line"><span><i class="fas fa-tag"></i> Total</span><span><strong>K ${r.total}</strong></span></div>
+                <div class="receipt-line"><span><i class="fas fa-calendar"></i> Date</span><span>${r.date} ${r.time}</span></div>
+                <div style="margin-top:8px; font-size:0.75rem; color:#2a6f97;"><i class="fas fa-check-circle"></i> Payment approved</div>
+            `;
+        }
+
+        // ---------- ATTENDANT DASHBOARD ----------
+        function renderAttendantPanel() {
+            const bus = buses.find(b => b.id === selectedBusId);
+            if (!bus) return;
+            const bookedArray = seatBookings[bus.id];
+            const bookedCount = bookedArray.filter(v => v === true).length;
+            const availableCount = bus.totalSeats - bookedCount;
+            const occupancy = Math.round((bookedCount / bus.totalSeats) * 100);
+
+            let statusColor = '#2a6f97';
+            if (availableCount === 0) statusColor = '#b22222';
+            else if (availableCount < 5) statusColor = '#e68a2e';
+
+            attendantBusStatus.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.6rem;">
+                    <span><i class="fas fa-bus"></i> ${bus.name}</span>
+                    <span class="badge" style="background:${statusColor};">${availableCount === 0 ? 'FULL' : availableCount + ' seats left'}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:#1e3c5a;">
+                    <span>${bus.from} → ${bus.to}</span>
+                    <span>${bus.departure} - ${bus.arrival}</span>
+                </div>
+            `;
+
+            attendantStats.innerHTML = `
+                <p><span><i class="fas fa-chair"></i> Total seats</span> <strong>${bus.totalSeats}</strong></p>
+                <p><span><i class="fas fa-check-circle" style="color:#2a6f97;"></i> Booked</span> <strong>${bookedCount}</strong></p>
+                <p><span><i class="fas fa-door-open" style="color:#2a6f97;"></i> Available</span> <strong>${availableCount}</strong></p>
+                <p><span><i class="fas fa-chart-pie"></i> Occupancy</span> <strong>${occupancy}%</strong></p>
+                <div style="margin-top:8px; font-size:0.8rem; color:#3b5e7a;"><i class="fas fa-info-circle"></i> Attendant sees real-time bus fullness</div>
+            `;
+        }
+
+        // Initialize everything
+        function init() {
+            renderBusList();
+            renderSeats();
+            updateSelectedSeatsDisplay();
+            updatePaymentPanel();
+            renderAttendantPanel();
+            renderReceipt(); // shows empty receipt
+            // Set up pay button
+            payButton.addEventListener('click', handlePayment);
+        }
+
+        init();
+    })();
+</script>
+</body>
+</html>
